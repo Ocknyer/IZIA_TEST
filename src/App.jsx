@@ -1,63 +1,45 @@
 import { useEffect, useState } from 'react';
 import { getConvertedRates, getRatesData } from './axios-api';
 import { ExchangeWrapper, SelectorWrapper } from './styled';
+import currency from './currency';
 
 const App = () => {
   const [rates, setRates] = useState({});
   const [countryOne, setCountryOne] = useState('USD');
   const [countryTwo, setCountryTwo] = useState('KRW');
-  const [currencyOne, setCurrencyOne] = useState(0);
-  const [currencyTwo, setCurrencyTwo] = useState(0);
-  const [ratesOne, setRatesOne] = useState(0);
-  const [ratesTwo, setRatesTwo] = useState(0);
-
-  console.log(
-    currencyOne,
-    currencyTwo,
-    countryOne,
-    countryTwo,
-    ratesOne,
-    ratesTwo
-  );
-
-  const currency = {
-    KRW: '원',
-    USD: '달러',
-    EUR: '유로',
-    JPY: '엔',
-    CNY: '위안',
-    AUD: '호주 달러',
-    CAD: '캐나다 달러',
-    NZD: '뉴질랜드 달러',
-  };
+  const [currencyOne, setCurrencyOne] = useState('');
+  const [currencyTwo, setCurrencyTwo] = useState('');
 
   useEffect(() => {
     getRatesData().then((data) => {
       setRates(data.rates);
-      setRatesOne(data.rates.USD);
-      setRatesTwo(data.rates.KRW);
     });
   }, []);
 
   const onChangeHandler = (e) => {
-    if (e.target.value > 0 && e.target.id === 'to') {
-      setCurrencyOne(parseInt(e.target.value));
+    if (e.target.value >= 0 && e.target.id === 'to') {
+      setCurrencyOne(e.target.value);
       getConvertedRates(countryOne, countryTwo, e.target.value).then(
         (data) => {
-          console.log(data);
-          setCurrencyTwo(data.result);
+          setCurrencyTwo(data.result.toString());
         }
       );
     }
 
-    if (e.target.value > 0 && e.target.id === 'from') {
-      setCurrencyTwo(parseInt(e.target.value));
+    if (e.target.value >= 0 && e.target.id === 'from') {
+      setCurrencyTwo(e.target.value);
       getConvertedRates(countryTwo, countryOne, e.target.value).then(
         (data) => {
-          console.log(data);
-          setCurrencyOne(data.result);
+          setCurrencyOne(data.result.toString());
         }
       );
+    }
+  };
+
+  const resetValue = (e) => {
+    if (e.target.value === '') {
+      setCurrencyOne('');
+      setCurrencyTwo('');
     }
   };
 
@@ -66,29 +48,38 @@ const App = () => {
       setCountryOne(e.target.value);
       getConvertedRates(e.target.value, countryTwo, currencyOne).then(
         (data) => {
-          console.log(data);
           setCurrencyTwo(data.result);
         }
       );
-    } else {
+    }
+
+    if (e.target.id === 'currencyTwo') {
       setCountryTwo(e.target.value);
       getConvertedRates(e.target.value, countryOne, currencyTwo).then(
         (data) => {
-          console.log(data);
           setCurrencyOne(data.result);
         }
       );
     }
   };
 
+  const onClickSwitch = () => {
+    setCurrencyOne(currencyTwo);
+    setCurrencyTwo(currencyOne);
+    setCountryOne(countryTwo);
+    setCountryTwo(countryOne);
+  };
+
   const country = Object.keys(rates).map((item, idx) => {
     return <option key={idx}>{item}</option>;
   });
 
-  const priceOne = currencyOne.toLocaleString();
-  const priceTwo = currencyTwo.toLocaleString();
-
-  console.log(priceOne, priceTwo);
+  const priceOne = currencyOne
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  const priceTwo = currencyTwo
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
   return (
     <>
@@ -100,11 +91,12 @@ const App = () => {
               type='text'
               id='to'
               onInput={onChangeHandler}
+              onKeyUp={resetValue}
               value={currencyOne}
+              placeholder='금액 입력'
             />
             <p>{priceOne + ' ' + currency[countryOne]}</p>
             <select
-              name='currency-one'
               id='currencyOne'
               onChange={onSelectChange}
               value={countryOne}
@@ -112,16 +104,20 @@ const App = () => {
               {country}
             </select>
           </SelectorWrapper>
+          <button className='btn-switch' onClick={onClickSwitch}>
+            switch
+          </button>
           <SelectorWrapper className='from'>
             <input
               type='text'
               id='from'
               onInput={onChangeHandler}
+              onKeyUp={resetValue}
               value={currencyTwo}
+              placeholder='금액 입력'
             />
             <p>{priceTwo + ' ' + currency[countryTwo]}</p>
             <select
-              name='currency-two'
               id='currencyTwo'
               onChange={onSelectChange}
               value={countryTwo}

@@ -3,7 +3,9 @@ import styled from 'styled-components';
 export const ExchangeWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
+  gap: 10px;
   width: 500px;
   padding: 30px;
   margin: 100px auto;
@@ -12,11 +14,16 @@ export const ExchangeWrapper = styled.div`
   box-sizing: border-box;
 
   .title {
-    margin: 0 auto 30px;
+    margin: 0 auto 20px;
   }
 
-  .to {
-    margin-bottom: 30px;
+  .btn-switch {
+    width: 50px;
+    text-align: center;
+    padding: 5px;
+    border: 1px solid #c4c4c4;
+    border-radius: 5px;
+    background-color: white;
   }
 `;
 
